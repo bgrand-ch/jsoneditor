@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link href="jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="jsoneditor.min.js"></script>
+    <style>html, body { margin: 0; padding: 0; }</style>
+</head>
+<body>
+    <div id="jsoneditor" style="width: 100vw; height: 100vh;"></div>
+    <div style="position: absolute; bottom: 10px; right: 10px;">
+      <button type="button" id="import">Import</button>
+      <button type="button" id="export">Export</button>
+    </div>
+
+    <script>
+        const containerEl = document.getElementById("jsoneditor");
+        const importBtnEl = document.getElementById("import");
+        const exportBtnEl = document.getElementById("export");
+
+        const options = {};
+        const editor = new JSONEditor(containerEl, options);
+
+        const initialJson = {};
+        editor.set(initialJson);
+
+        importBtnEl.onclick = () => {
+          const inputEl = document.createElement("input");
+
+          inputEl.type = "file";
+          inputEl.accept = ".json,application/json";
+
+          inputEl.onchange = (e) => {
+            const file = e.target.files[0];
+
+            if (!file) {
+              return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+              try {
+                const json = JSON.parse(event.target.result);
+                editor.set(json);
+              } catch (error) {
+                alert("Invalid JSON file: " + error.message);
+              }
+            };
+
+            reader.readAsText(file);
+          };
+
+          inputEl.click();
+        };
+
+        exportBtnEl.onclick = () => {
+          const json = editor.get();
+          const blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+
+          a.href = url;
+          a.download = "data.json";
+          a.click();
+
+          URL.revokeObjectURL(url);
+        };
+    </script>
+</body>
+</html>
